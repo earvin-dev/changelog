@@ -8,10 +8,18 @@ import chalkAnimation from 'chalk-animation';
 import figlet from 'figlet';
 import { createSpinner } from 'nanospinner';
 import fs from 'fs';
+import path from 'path'
+
+const CHANGELOG_FOLDER = 'changelog'
+const RELEASED_FOLDER = `${CHANGELOG_FOLDER}/released`
+const UNRELEASED_FOLDER = `${CHANGELOG_FOLDER}/unreleased`
+
+const ROOT = path.resolve('');
 
 const ToolFunction = {
     'new': 'new',
     'release': 'release',
+    'unreleased': 'unreleased',
     'init': 'init',
 }
 
@@ -45,7 +53,12 @@ async function runSelectedFunction(selected, data = []) {
             newEntry(data)
             break;
         case ToolFunction.release:
-            release(data)
+            var [version] = data
+
+            release(version)
+            break;
+        case ToolFunction.unreleased:
+            unreleased()
             break;
         case ToolFunction.init:
             init()
@@ -56,25 +69,35 @@ async function runSelectedFunction(selected, data = []) {
 }
 
 async function newEntry(data = []) {
+    var changelogTypes = [
+        ChangelogType.added,
+        ChangelogType.changed,
+        ChangelogType.deprecated,
+        ChangelogType.removed,
+        ChangelogType.fixed,
+        ChangelogType.security,
+    ]
+
     if (data.length == 0) {
         const answer = await inquirer.prompt({
             name: 'new_entry',
             type: 'list',
             message: 'New Entry',
-            choices: [
-                ChangelogType.added,
-                ChangelogType.changed,
-                ChangelogType.deprecated,
-                ChangelogType.removed,
-                ChangelogType.fixed,
-                ChangelogType.security,
-            ],
+            choices: changelogTypes,
         })
 
         return addEntry(answer['new_entry'])
     }
 
-    addEntry(data[0], data[1]);
+    var [type, ...content] = data
+
+    if (!changelogTypes.includes(type)) {
+        console.log(usage)
+
+        return
+    }
+
+    addEntry(type, content.join(' '));
 }
 
 async function addEntry(type, content = '') {
@@ -88,7 +111,9 @@ async function addEntry(type, content = '') {
         return addEntry(type, answer['content'])
     }
 
-    createFile(type, content)
+    var dateTimeStamp = Date.now();
+
+    createFile(`${UNRELEASED_FOLDER}/${type}/${dateTimeStamp}`, content)
 }
 
 async function init() {
@@ -102,33 +127,84 @@ Init Success
     })
 }
 
-async function release() {
+async function release(version) {
+    if (version == undefined) {
+        const answer = await inquirer.prompt({
+            name: 'version',
+            message: 'Version',
+        })
 
+        return release(answer['version'])
+    }
+
+    var versionFolder = `${RELEASED_FOLDER}/${toVersionFolder(version)}`;
+
+    moveUnreleasedNotes(versionFolder)
+
+    displayReleaseNotes(
+        versionFolder,
+        `[${version}] ${getDateToday()}`
+    )
 }
 
-function winner() {
-    console.clear();
-    const msg = `
-Congrats , halo
+async function unreleased() {
+    displayReleaseNotes(
+        UNRELEASED_FOLDER,
+        `Unreleased`,
+    )
+}
 
-Testing
-`;
+function moveUnreleasedNotes(versionFolder) {
+    var folder = UNRELEASED_FOLDER
 
-    figlet(msg, (err, data) => {
-        console.log(gradient.pastel.multiline(data))
-    })
+    let folders = fs.readdirSync(folder);
+
+    createFolder(`${versionFolder}`)
+
+    folders.forEach((typeFolder) => {
+        let releaseNotes = fs.readdirSync(`${folder}/${typeFolder}`).filter((file) => file != '.gitkeep');
+        if (releaseNotes.length == 0) return
+        
+        createFolder(`${versionFolder}/${typeFolder}`)
+
+        releaseNotes.forEach((file) => {
+            fs.rename(`${folder}/${typeFolder}/${file}`, `${versionFolder}/${typeFolder}/${file}`, () => {})
+        });
+    });
+}
+
+function displayReleaseNotes(folder, header = '') {
+    let folders = fs.readdirSync(folder);
+
+    var releaseNotesData = '';
+  
+    folders.forEach((typeFolder) => {
+
+        let releaseNotes = fs.readdirSync(`${folder}/${typeFolder}`).filter((file) => file != '.gitkeep');
+        if (releaseNotes.length == 0) return
+
+        releaseNotesData += `\n### ${toTitleCase(typeFolder)}\n`
+
+        releaseNotes.forEach((file) => {
+            const buffer = fs.readFileSync(`${folder}/${typeFolder}/${file}`);
+
+            releaseNotesData += `\n- ${buffer.toString()}`
+        });
+    });
+
+    console.log(`## ${header}\n${releaseNotesData}`)
 }
 
 function createChangelogFolder() {
-    createFolder('changelog')
-    createFolder('changelog/released', true)
-    createFolder('changelog/unreleased')
-    createFolder('changelog/unreleased/added', true)
-    createFolder('changelog/unreleased/changed', true)
-    createFolder('changelog/unreleased/deprecated', true)
-    createFolder('changelog/unreleased/removed', true)
-    createFolder('changelog/unreleased/fixed', true)
-    createFolder('changelog/unreleased/security', true)
+    createFolder(getPath(CHANGELOG_FOLDER))
+    createFolder(getPath(RELEASED_FOLDER), true)
+    createFolder(getPath(UNRELEASED_FOLDER))
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.added}`), true)
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.changed}`), true)
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.deprecated}`), true)
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.removed}`), true)
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.fixed}`), true)
+    createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.security}`), true)
 }
 
 function createFolder(folderName, withGitKeep = false) {
@@ -160,6 +236,7 @@ Usage
   $ changelog new <added|changed|deprecated|removed|fixed|security> "<content>"
   $ changelog init
   $ changelog release <version>
+  $ changelog unreleased
 
 Options
   --help, -h  Help
@@ -168,6 +245,7 @@ Examples
   $ changelog new added "Changed Layout"
   $ changelog init
   $ changelog release 1.0.1
+  $ changelog unreleased
 `
 
 const cli = meow(usage, {
@@ -181,3 +259,42 @@ if (cli.input.length == 0) {
 
     runSelectedFunction(selected, data)
 }
+
+function toTitleCase(str) {
+    return str.replace(
+      /\w\S*/g,
+      function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      }
+    );
+}
+
+function toVersionFolder(version) {
+    var [major, minor, patch] = version.split('.')
+
+    return `${padNumber(major)}-${padNumber(minor)}-${padNumber(patch)}`
+}  
+
+function padNumber(number) {
+    if (number <= 999) { 
+        number = ("00"+number).slice(-3);
+    }
+
+    return number;
+}
+
+function getDateToday() {
+    let date_time = new Date();
+
+    let date = ("0" + date_time.getDate()).slice(-2);
+
+    let month = ("0" + (date_time.getMonth() + 1)).slice(-2);
+
+    let year = date_time.getFullYear();
+
+    return `${year}-${month}-${date}`;
+}
+
+function getPath(targetPath) {
+    return path.join(ROOT, targetPath)
+} 

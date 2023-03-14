@@ -1,15 +1,17 @@
 {
-  "name": "cli-tool",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@earvin.dev/changelog",
+  "version": "0.0.3",
+  "description": "Changelog Keeper",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "changelog.sh",
+    "changelog"
+  ],
+  "bin": "./index.js",
   "dependencies": {
     "chalk": "^5.2.0",
     "chalk-animation": "^2.0.3",
