@@ -233,19 +233,19 @@ function createFile(fileName, content = '') {
 
 const usage = `
 Usage
-  $ changelog new <added|changed|deprecated|removed|fixed|security> "<content>"
-  $ changelog init
-  $ changelog release <version>
-  $ changelog unreleased
+  $ npx changelog new <added|changed|deprecated|removed|fixed|security> "<content>"
+  $ npx changelog init
+  $ npx changelog release <version>
+  $ npx changelog unreleased
 
 Options
   --help, -h  Help
 
 Examples
-  $ changelog new added "Changed Layout"
-  $ changelog init
-  $ changelog release 1.0.1
-  $ changelog unreleased
+  $ npx changelog new added "Changed Layout"
+  $ npx changelog init
+  $ npx changelog release 1.0.1
+  $ npx changelog unreleased
 `
 
 const cli = meow(usage, {
