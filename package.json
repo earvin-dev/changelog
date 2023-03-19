@@ -1,9 +1,11 @@
 {
   "name": "@earvin.dev/changelog",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Changelog Keeper",
   "main": "index.js",
   "type": "module",
+  "homepage": "https://github.com/earvin-dev/changelog",
+  "license": "ISC",
   "scripts": {
     "start": "node .",
     "publish": "npm publish --access-public"
@@ -14,12 +16,9 @@
   ],
   "bin": "./index.js",
   "dependencies": {
-    "chalk": "^5.2.0",
-    "chalk-animation": "^2.0.3",
     "figlet": "^1.5.2",
     "gradient-string": "^2.0.2",
     "inquirer": "^9.1.4",
-    "meow": "^11.0.0",
-    "nanospinner": "^1.1.0"
+    "meow": "^11.0.0"
   }
 }

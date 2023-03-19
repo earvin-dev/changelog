@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 
 import meow from 'meow';
-import chalk from 'chalk';
 import inquirer from 'inquirer';
 import gradient from 'gradient-string';
-import chalkAnimation from 'chalk-animation';
 import figlet from 'figlet';
-import { createSpinner } from 'nanospinner';
 import fs from 'fs';
 import path from 'path'
 
@@ -143,7 +140,7 @@ async function release(version) {
 
     displayReleaseNotes(
         versionFolder,
-        `[${version}] ${getDateToday()}`
+        `[${version}] - ${getDateToday()}`
     )
 }
 
