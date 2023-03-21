@@ -5,13 +5,12 @@ import fs from 'fs';
 import gradient from 'gradient-string';
 import inquirer from 'inquirer';
 import meow from 'meow';
-import path from 'path';
+import { getDateToday, getPath, toTitleCase, toVersionFolder } from './util.js';
 
 const CHANGELOG_FOLDER = 'changelog'
 const RELEASED_FOLDER = `${CHANGELOG_FOLDER}/released`
 const UNRELEASED_FOLDER = `${CHANGELOG_FOLDER}/unreleased`
 
-const ROOT = path.resolve('');
 
 const ToolFunction = {
     'new': 'new',
@@ -27,9 +26,9 @@ const ChangelogType = {
     'removed': 'removed',
     'fixed': 'fixed',
     'security': 'security',
-} 
+}
 
-async function askFunction() {
+async function askFunction(): Promise<void> {
     const answer = await inquirer.prompt({
         name: 'selected_function',
         type: 'list',
@@ -44,8 +43,8 @@ async function askFunction() {
     return runSelectedFunction(answer['selected_function'])
 }
 
-async function runSelectedFunction(selected, data = []) {
-    switch(selected) {
+async function runSelectedFunction(selected: string, data: string[] = []) {
+    switch (selected) {
         case ToolFunction.new:
             newEntry(data)
             break;
@@ -65,7 +64,7 @@ async function runSelectedFunction(selected, data = []) {
     }
 }
 
-async function newEntry(data = []) {
+async function newEntry(data: string[] = []): Promise<void> {
     var changelogTypes = [
         ChangelogType.added,
         ChangelogType.changed,
@@ -97,9 +96,9 @@ async function newEntry(data = []) {
     addEntry(type, content.join(' '));
 }
 
-async function addEntry(type, content = '') {
+async function addEntry(type: string, content: string = ''): Promise<void> {
     if (content == '') {
-        
+
         const answer = await inquirer.prompt({
             name: 'content',
             message: 'Content',
@@ -124,7 +123,7 @@ Init Success
     })
 }
 
-async function release(version) {
+async function release(version: string): Promise<void> {
     if (version == undefined) {
         const answer = await inquirer.prompt({
             name: 'version',
@@ -151,7 +150,7 @@ async function unreleased() {
     )
 }
 
-function moveUnreleasedNotes(versionFolder) {
+function moveUnreleasedNotes(versionFolder: string) {
     var folder = UNRELEASED_FOLDER
 
     let folders = fs.readdirSync(folder);
@@ -161,22 +160,22 @@ function moveUnreleasedNotes(versionFolder) {
     folders.forEach((typeFolder) => {
         let releaseNotes = fs.readdirSync(`${folder}/${typeFolder}`).filter((file) => file != '.gitkeep');
         if (releaseNotes.length == 0) return
-        
+
         createFolder(`${versionFolder}/${typeFolder}`)
 
         releaseNotes.forEach((file) => {
-            fs.rename(`${folder}/${typeFolder}/${file}`, `${versionFolder}/${typeFolder}/${file}`, () => {})
+            fs.rename(`${folder}/${typeFolder}/${file}`, `${versionFolder}/${typeFolder}/${file}`, () => { })
         });
     });
 }
 // create unit test for moveUnreleasedNotes function
 
 
-function displayReleaseNotes(folder, header = '') {
+function displayReleaseNotes(folder: string, header: string = '') {
     let folders = fs.readdirSync(folder);
 
     var releaseNotesData = '';
-  
+
     folders.forEach((typeFolder) => {
 
         let releaseNotes = fs.readdirSync(`${folder}/${typeFolder}`).filter((file) => file != '.gitkeep');
@@ -206,7 +205,7 @@ function createChangelogFolder() {
     createFolder(getPath(`${UNRELEASED_FOLDER}/${ChangelogType.security}`), true)
 }
 
-function createFolder(folderName, withGitKeep = false) {
+function createFolder(folderName: string, withGitKeep: boolean = false) {
     try {
         if (!fs.existsSync(folderName)) {
             fs.mkdirSync(folderName)
@@ -220,10 +219,10 @@ function createFolder(folderName, withGitKeep = false) {
     }
 }
 
-function createFile(fileName, content = '') {
+function createFile(fileName: string, content: string = '') {
     try {
         if (!fs.existsSync(fileName)) {
-            fs.writeFile(fileName, content, () => {})
+            fs.writeFile(fileName, content, () => { })
         }
     } catch (err) {
         console.error(err)
@@ -248,52 +247,13 @@ Examples
 `
 
 const cli = meow(usage, {
-	importMeta: import.meta,
+    importMeta: import.meta,
 });
 
 if (cli.input.length == 0) {
-    await askFunction();
+    askFunction();
 } else {
     var [selected, ...data] = cli.input
 
     runSelectedFunction(selected, data)
 }
-
-function toTitleCase(str) {
-    return str.replace(
-      /\w\S*/g,
-      function(txt) {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      }
-    );
-}
-
-function toVersionFolder(version) {
-    var [major, minor, patch] = version.split('.')
-
-    return `${padNumber(major)}-${padNumber(minor)}-${padNumber(patch)}`
-}  
-
-function padNumber(number) {
-    if (number <= 999) { 
-        number = ("00"+number).slice(-3);
-    }
-
-    return number;
-}
-
-function getDateToday() {
-    let date_time = new Date();
-
-    let date = ("0" + date_time.getDate()).slice(-2);
-
-    let month = ("0" + (date_time.getMonth() + 1)).slice(-2);
-
-    let year = date_time.getFullYear();
-
-    return `${year}-${month}-${date}`;
-}
-
-function getPath(targetPath) {
-    return path.join(ROOT, targetPath)
-} 

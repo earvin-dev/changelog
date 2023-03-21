@@ -7,18 +7,41 @@
   "homepage": "https://github.com/earvin-dev/changelog",
   "license": "ISC",
   "scripts": {
-    "start": "node .",
+    "watch": "tsc -w -p .",
+    "dev": "node ./dist/index.js",
+    "build": "tsc",
+    "test": "jest",
     "publish": "npm publish --access-public"
   },
   "keywords": [
     "changelog.sh",
     "changelog"
   ],
-  "bin": "./index.js",
+  "bin": "./dist/index.js",
   "dependencies": {
+    "@jest/globals": "^29.5.0",
     "figlet": "^1.5.2",
     "gradient-string": "^2.0.2",
     "inquirer": "^9.1.4",
     "meow": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.5",
+    "@types/gradient-string": "^1.1.2",
+    "@types/inquirer": "^9.0.3",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^5.0.2"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   }
 }
