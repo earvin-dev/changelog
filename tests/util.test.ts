@@ -1,9 +1,12 @@
+import path from 'path';
+const ROOT = path.resolve('');
 import { describe } from '@jest/globals'
 import {
     toTitleCase,
     toVersionFolder,
     padNumber,
     dateToString,
+    getPath,
 } from '../src/util'
 
 describe('toTitleCase', () => {
@@ -51,5 +54,16 @@ describe('dateToString', () => {
     test('should return date string', () => {
         const dateData = new Date('2021-10-10');
         expect(dateToString(dateData)).toBe('2021-10-10');
+    });
+});
+
+describe('getPath', () => {
+    test('should return path', () => {
+        const targetPath = 'tests';
+        expect(getPath(targetPath)).toBe(path.join(ROOT, targetPath));
+    });
+    test('should return path', () => {
+        const targetPath = 'src';
+        expect(getPath(targetPath)).toBe(path.join(ROOT, targetPath));
     });
 });

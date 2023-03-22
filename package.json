@@ -1,6 +1,6 @@
 {
   "name": "@earvin.dev/changelog",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Changelog Keeper",
   "main": "index.js",
   "type": "module",
@@ -11,6 +11,7 @@
     "dev": "node ./dist/index.js",
     "build": "tsc",
     "test": "jest",
+    "coverage": "jest --coverage",
     "publish": "npm run build && npm publish --access-public"
   },
   "keywords": [

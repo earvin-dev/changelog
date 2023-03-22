@@ -5,12 +5,11 @@ import fs from 'fs';
 import gradient from 'gradient-string';
 import inquirer from 'inquirer';
 import meow from 'meow';
-import { getDateToday, getPath, toTitleCase, toVersionFolder } from './util.js';
+import { dateToString, getPath, toTitleCase, toVersionFolder } from './util.js';
 
 const CHANGELOG_FOLDER = 'changelog'
 const RELEASED_FOLDER = `${CHANGELOG_FOLDER}/released`
 const UNRELEASED_FOLDER = `${CHANGELOG_FOLDER}/unreleased`
-
 
 const ToolFunction = {
     'new': 'new',
@@ -139,7 +138,7 @@ async function release(version: string): Promise<void> {
 
     displayReleaseNotes(
         versionFolder,
-        `[${version}] - ${getDateToday()}`
+        `[${version}] - ${dateToString(new Date())}`
     )
 }
 
@@ -168,8 +167,6 @@ function moveUnreleasedNotes(versionFolder: string) {
         });
     });
 }
-// create unit test for moveUnreleasedNotes function
-
 
 function displayReleaseNotes(folder: string, header: string = '') {
     let folders = fs.readdirSync(folder);

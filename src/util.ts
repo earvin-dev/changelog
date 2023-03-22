@@ -25,12 +25,6 @@ export function padNumber(num: string): string {
     return num;
 }
 
-export function getDateToday(): string {
-    let date_time = new Date();
-
-    return dateToString(date_time);
-}
-
 export function dateToString(dateData: Date): string {
     let date_time = new Date(dateData);
 
